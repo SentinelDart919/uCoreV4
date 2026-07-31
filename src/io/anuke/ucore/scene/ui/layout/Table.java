@@ -505,7 +505,7 @@ public class Table extends WidgetGroup{
         button.clearChildren();
         button.add(new Image(image)).size(imagesize).update(i -> i.setColor(button.isDisabled() ? Color.GRAY : Color.WHITE));
         button.row();
-        button.add(button.getLabel()).padTop(4);
+        button.add(button.getLabel()).padTop(4).growX();
         button.clicked(clicked);
         return add(button);
     }

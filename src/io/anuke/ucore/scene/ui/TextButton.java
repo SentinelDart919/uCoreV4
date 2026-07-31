@@ -50,7 +50,8 @@ public class TextButton extends Button{
         this.style = style;
         label = new Label(text, new LabelStyle(style.font, style.fontColor));
         label.setAlignment(Align.center);
-        add(label).expand().fill().wrap().minWidth(getMinWidth());
+        label.setWrap(true);
+        add(label).expand().fill().minWidth(getMinWidth());
         setSize(getPrefWidth(), getPrefHeight());
     }
 
