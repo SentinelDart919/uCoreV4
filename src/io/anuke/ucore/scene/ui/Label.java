@@ -222,6 +222,10 @@ public class Label extends Element{
         }else{
             y += (height - textHeight) / 2;
         }
+
+        if(text.length() == 1 && text.charAt(0) == '?'){
+            x -= 8;
+        }
         if(!cache.getFont().isFlipped()) y += textHeight;
 
         layout.setText(font, text, 0, text.length(), Color.WHITE, textWidth, lineAlign, wrap, ellipsis);
