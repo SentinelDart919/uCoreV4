@@ -224,7 +224,7 @@ public class Label extends Element{
         }
 
         if(text.length() == 1 && text.charAt(0) == '?'){
-            x -= 8;
+            x -= 8; //FIX THIS
         }
         if(!cache.getFont().isFlipped()) y += textHeight;
 
