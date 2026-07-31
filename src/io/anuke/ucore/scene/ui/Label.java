@@ -23,7 +23,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.StringBuilder;
 import io.anuke.ucore.function.Supplier;
 import io.anuke.ucore.scene.Element;
 import io.anuke.ucore.scene.style.Drawable;
@@ -114,24 +113,17 @@ public class Label extends Element{
 
     private void setTextInternal(CharSequence newText){
         if(newText == null) newText = "";
-        if(newText instanceof StringBuilder){
-            if(text.equals(newText)) return;
-            text.setLength(0);
-            text.append((StringBuilder) newText);
-        }else{
-            if(textEquals(newText)) return;
-            text.setLength(0);
-            text.append(newText);
-        }
+        if(textEquals(newText)) return;
+        text.setLength(0);
+        text.append(newText);
         invalidateHierarchy();
     }
 
     public boolean textEquals(CharSequence other){
-        int length = text.length;
-        char[] chars = text.chars;
+        int length = text.length();
         if(length != other.length()) return false;
         for(int i = 0; i < length; i++)
-            if(chars[i] != other.charAt(i)) return false;
+            if(text.charAt(i) != other.charAt(i)) return false;
         return true;
     }
 
@@ -206,7 +198,7 @@ public class Label extends Element{
         float textWidth, textHeight;
         if(wrap || text.indexOf("\n") != -1){
             // If the text can span multiple lines, determine the text's actual size so it can be aligned within the label.
-            layout.setText(font, text, 0, text.length, Color.WHITE, width, lineAlign, wrap, ellipsis);
+            layout.setText(font, text, 0, text.length(), Color.WHITE, width, lineAlign, wrap, ellipsis);
             textWidth = layout.width;
             textHeight = layout.height;
 
@@ -232,7 +224,7 @@ public class Label extends Element{
         }
         if(!cache.getFont().isFlipped()) y += textHeight;
 
-        layout.setText(font, text, 0, text.length, Color.WHITE, textWidth, lineAlign, wrap, ellipsis);
+        layout.setText(font, text, 0, text.length(), Color.WHITE, textWidth, lineAlign, wrap, ellipsis);
         cache.setText(layout, x, y);
 
         if(fontScaleChanged) font.getData().setScale(oldScaleX, oldScaleY);

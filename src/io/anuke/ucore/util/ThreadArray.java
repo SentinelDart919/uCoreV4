@@ -20,10 +20,10 @@ public class ThreadArray<T> extends Array<T>{
     }
 
     @Override
-    public Iterator<T> iterator(){
+    public ArrayIterator<T> iterator(){
         if(threaditer.get() == null){
             threaditer.set(new ArrayIterable<>(this));
         }
-        return threaditer.get().iterator();
+        return (ArrayIterator<T>) threaditer.get().iterator();
     }
 }

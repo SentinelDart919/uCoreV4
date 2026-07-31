@@ -101,6 +101,11 @@ public class InputProxy implements Input{
     }
 
     @Override
+    public boolean isButtonJustPressed(int button){
+        return input.isButtonJustPressed(button);
+    }
+
+    @Override
     public boolean isKeyPressed(int key){
         return input.isKeyPressed(key);
     }
@@ -116,8 +121,18 @@ public class InputProxy implements Input{
     }
 
     @Override
+    public void getTextInput(TextInputListener listener, String title, String text, String hint, OnscreenKeyboardType type){
+        input.getTextInput(listener, title, text, hint, type);
+    }
+
+    @Override
     public void setOnscreenKeyboardVisible(boolean visible){
         input.setOnscreenKeyboardVisible(visible);
+    }
+
+    @Override
+    public void setOnscreenKeyboardVisible(boolean visible, OnscreenKeyboardType type){
+        input.setOnscreenKeyboardVisible(visible, type);
     }
 
     @Override
@@ -126,13 +141,18 @@ public class InputProxy implements Input{
     }
 
     @Override
-    public void vibrate(long[] pattern, int repeat){
-        input.vibrate(pattern, repeat);
+    public void vibrate(VibrationType type){
+        input.vibrate(type);
     }
 
     @Override
-    public void cancelVibrate(){
-        input.cancelVibrate();
+    public void vibrate(int milliseconds, boolean fallback){
+        input.vibrate(milliseconds, fallback);
+    }
+
+    @Override
+    public void vibrate(int milliseconds, int intensity, boolean fallback){
+        input.vibrate(milliseconds, intensity, fallback);
     }
 
     @Override
@@ -161,23 +181,13 @@ public class InputProxy implements Input{
     }
 
     @Override
-    public boolean isCatchBackKey(){
-        return input.isCatchBackKey();
+    public boolean isCatchKey(int keycode){
+        return input.isCatchKey(keycode);
     }
 
     @Override
-    public void setCatchBackKey(boolean catchBack){
-        input.setCatchBackKey(catchBack);
-    }
-
-    @Override
-    public boolean isCatchMenuKey(){
-        return input.isCatchMenuKey();
-    }
-
-    @Override
-    public void setCatchMenuKey(boolean catchMenu){
-        input.setCatchMenuKey(catchMenu);
+    public void setCatchKey(int keycode, boolean catchKey){
+        input.setCatchKey(keycode, catchKey);
     }
 
     @Override
@@ -228,5 +238,20 @@ public class InputProxy implements Input{
     @Override
     public float getPressure(int pointer){
         return 0;
+    }
+
+    @Override
+    public int getMaxPointers(){
+        return input.getMaxPointers();
+    }
+
+    @Override
+    public void setKeyboardHeightObserver(KeyboardHeightObserver observer){
+        input.setKeyboardHeightObserver(observer);
+    }
+
+    @Override
+    public void openTextInputField(com.badlogic.gdx.input.NativeInputConfiguration configuration){
+        input.openTextInputField(configuration);
     }
 }

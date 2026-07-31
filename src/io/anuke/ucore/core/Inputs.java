@@ -7,7 +7,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerAdapter;
 import com.badlogic.gdx.controllers.Controllers;
-import com.badlogic.gdx.controllers.PovDirection;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Bits;
 import com.badlogic.gdx.utils.IntFloatMap;
@@ -29,14 +28,19 @@ public class Inputs{
     private static Array<InputDevice> devices = new Array<>();
     private static InputProcessor listen = new InputAdapter(){
         @Override
-        public boolean scrolled(int amount){
-            scroll = -amount;
+        public boolean scrolled(float amountX, float amountY){
+            scroll = -(int)amountY;
             return false;
         }
 
         @Override
         public boolean keyUp(int keycode){
             keysReleased.add(keycode);
+            return false;
+        }
+
+        @Override
+        public boolean touchCancelled(int screenX, int screenY, int pointer, int button){
             return false;
         }
     };
@@ -105,14 +109,6 @@ public class Inputs{
                 }
 
                 @Override
-                public boolean povMoved(Controller controller, int povIndex, PovDirection value){
-                    if(debug){
-                        Log.info("POV: {0}, Code: {1}, Value: {2}", Input.findByType(Type.controller, povIndex, false), povIndex, value);
-                    }
-                    return false;
-                }
-
-                @Override
                 public boolean buttonDown(Controller controller, int buttonCode){
                     if(debug)
                         Log.info("Button: {0}, Code: {1}", Input.findByType(Type.controller, buttonCode, false), buttonCode);
@@ -161,8 +157,6 @@ public class Inputs{
             if(device.type == DeviceType.keyboard) continue;
             device.pressed.clear();
             device.released.clear();
-
-            device.lastPOV = device.controller.getPov(0);
         }
         keysReleased.clear();
     }
@@ -214,7 +208,6 @@ public class Inputs{
 
         if(input.type == Input.Type.controller){
             if(input.axis) return device.controller.getAxis(input.code) > 0f;
-            if(input.pov) return device.controller.getPov(input.code) == input.direction;
             return input.code >= 0 && device.controller.getButton(input.code);
         }else if(input.type == Input.Type.key){
             return input.code >= 0 && Gdx.input.isKeyPressed(input.code);
@@ -245,8 +238,6 @@ public class Inputs{
 
         if(input.type == Input.Type.controller){
             if(input.axis) return device.controller.getAxis(input.code) > 0f && device.axes.get(input.code, 0) < 0;
-            if(input.pov)
-                return device.controller.getPov(input.code) == input.direction && device.lastPOV != input.direction;
             return input.code >= 0 && device.pressed.get(input.code);
         }else if(input.type == Input.Type.key){
             return Gdx.input.isKeyJustPressed(input.code);
@@ -276,8 +267,6 @@ public class Inputs{
             return false;
 
         if(input.type == Input.Type.controller){
-            if(input.pov)
-                return device.controller.getPov(input.code) != input.direction && device.lastPOV == input.direction;
             return input.code >= 0 && device.released.get(input.code);
         }else if(input.type == Input.Type.key){
             return keysReleased.contains(input.code);
@@ -316,8 +305,8 @@ public class Inputs{
                 float value = c.getAxis(axis.min.code) * (axis.min.name().contains("VERTICAL") && !OS.isWindows ? -1 : 1);
                 return Math.abs(value) < deadzone ? 0f : value;
             }else{
-                boolean min = axis.min.pov ? c.getPov(0) == axis.min.direction : c.getButton(axis.min.code),
-                        max = axis.max.pov ? c.getPov(0) == axis.max.direction : c.getButton(axis.max.code);
+                boolean min = c.getButton(axis.min.code),
+                        max = c.getButton(axis.max.code);
                 return (min && max) || (!min && !max) ? 0 : min ? -1 : 1;
             }
         }else{
@@ -344,8 +333,8 @@ public class Inputs{
             if(axis.min.axis){
                 return c.getAxis(axis.min.code) * (axis.min.name().contains("VERTICAL") && !OS.isWindows ? -1 : 1);
             }else{
-                boolean min = axis.min.pov ? c.getPov(0) == axis.min.direction : c.getButton(axis.min.code),
-                        max = axis.max.pov ? c.getPov(0) == axis.max.direction : c.getButton(axis.max.code);
+                boolean min = c.getButton(axis.min.code),
+                        max = c.getButton(axis.max.code);
                 return (min && max) || (!min && !max) ? 0 : min ? -1 : 1;
             }
         }else{
@@ -419,7 +408,6 @@ public class Inputs{
         public final Bits pressed = new Bits();
         public final Bits released = new Bits();
         public final IntFloatMap axes = new IntFloatMap();
-        public PovDirection lastPOV = PovDirection.center;
 
         public InputDevice(DeviceType type, String name){
             this(type, name, null);
