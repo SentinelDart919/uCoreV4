@@ -124,6 +124,14 @@ public class Effects{
         public final float lifetime;
         /** Clip size. */
         public float size;
+        /** Whether this effect emits light. */
+        public boolean emitLight = false;
+        /** Light radius in world units. */
+        public float lightRadius = 0f;
+        /** Light opacity. */
+        public float lightOpacity = 0.5f;
+        /** Light color. */
+        public Color lightColor = Color.WHITE;
 
         public Effect(float life, float clipsize, EffectRenderer draw){
             this.id = lastid++;

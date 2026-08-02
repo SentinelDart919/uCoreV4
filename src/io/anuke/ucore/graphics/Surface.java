@@ -11,7 +11,7 @@ import io.anuke.ucore.core.Graphics;
 
 /** A framebuffer wrapper. */
 public class Surface implements Disposable{
-    private FrameBuffer buffer;
+    protected FrameBuffer buffer;
     private int scale;
     private boolean linear = false;
     private int bind;
@@ -22,6 +22,13 @@ public class Surface implements Disposable{
         this.scale = scale;
         this.bind = bind;
         onResize();
+    }
+
+    public Surface(FrameBuffer buffer){
+        this.buffer = buffer;
+        this.fixedSize = true;
+        this.fixedWidth = buffer.getWidth();
+        this.fixedHeight = buffer.getHeight();
     }
 
     public FrameBuffer getBuffer(){
@@ -51,13 +58,25 @@ public class Surface implements Disposable{
     public void onResize(){
 
         if(!fixedSize){
+            int scale = this.scale == -1 ? Core.cameraScale : this.scale;
+            int width = Gdx.graphics.getBackBufferWidth() / scale;
+            int height = Gdx.graphics.getBackBufferHeight() / scale;
+
+            //skip invalid sizes, eg. when the window is minimized to 0x0
+            if(width <= 0 || height <= 0){
+                return;
+            }
+
             if(buffer != null){
                 buffer.dispose();
             }
-            int scale = this.scale == -1 ? Core.cameraScale : this.scale;
 
-            buffer = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getBackBufferWidth() / scale, Gdx.graphics.getBackBufferHeight() / scale, false);
+            buffer = new FrameBuffer(Format.RGBA8888, width, height, false);
         }else if(buffer == null || buffer.getWidth() != fixedWidth || buffer.getHeight() != fixedHeight){
+            if(fixedWidth <= 0 || fixedHeight <= 0){
+                return;
+            }
+
             if(buffer != null){
                 buffer.dispose();
             }

@@ -1,0 +1,36 @@
+#ifdef GL_ES
+    #define PRECISION mediump
+    precision PRECISION float;
+#else
+    #define PRECISION
+#endif
+
+varying vec2 v_texCoords;
+
+uniform sampler2D u_texture0;
+uniform sampler2D u_lightmap;
+uniform sampler2D u_darkmap;
+uniform vec2 u_resolution;
+uniform vec4 u_color;
+
+void main(){
+    vec4 colors = texture2D(u_texture0, v_texCoords);
+    vec4 light = texture2D(u_lightmap, v_texCoords);
+    vec4 dark = texture2D(u_darkmap, v_texCoords);
+
+    // If there is darkness in the mask, apply it
+    // The effect is: scene * (light + (1.0 - dark.a * darkness_factor))
+    // But Koru likely uses a simpler blend.
+    
+    // Simple version: modulate scene by lightmap and darkness
+    // dark.a represents where it IS dark.
+    float darkness = dark.a;
+    
+    vec3 ambient = u_color.rgb * u_color.a;
+    vec3 finalLight = max(ambient, light.rgb);
+    
+    // Apply darkness: reduce light where darkness mask is opaque
+    finalLight *= (1.0 - darkness);
+
+    gl_FragColor = vec4(colors.rgb * finalLight, colors.a);
+}

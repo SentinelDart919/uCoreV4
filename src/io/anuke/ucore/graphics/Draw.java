@@ -41,6 +41,11 @@ public class Draw{
         }
         return blankRegion;
     }
+    // added if you already have "error" sprite when sprites are missing this only used if you want to a feature actually have a blank region instead of error one
+    /** Returns the fully transparent 'clear' region, used as a fallback for missing optional regions. */
+    public static TextureRegion getClearRegion(){
+        return Core.atlas == null ? getBlankRegion() : Core.atlas.getRegion("clear", getBlankRegion());
+    }
 
     public static void sprite(Sprite sprite){
         sprite.draw(batch);
