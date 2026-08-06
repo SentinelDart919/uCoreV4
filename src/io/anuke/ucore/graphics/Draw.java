@@ -5,10 +5,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.NumberUtils;
 import io.anuke.ucore.core.Core;
+import io.anuke.ucore.function.Consumer;
 import io.anuke.ucore.scene.style.Drawable;
 import io.anuke.ucore.util.Log;
 import io.anuke.ucore.util.Mathf;
@@ -21,6 +23,7 @@ public class Draw{
     private static Color[] carr = new Color[3];
     private static TextureRegion blankRegion;
     private static float scl = 1f;
+    private static float[] vertices = new float[20];
 
     public static void scale(float scaling){
         Draw.scl = scaling;
@@ -223,6 +226,88 @@ public class Draw{
 
     public static void crect(TextureRegion texture, float x, float y){
         crect(texture, x, y, texture.getRegionWidth(), texture.getRegionHeight());
+    }
+
+    public static void rectv(TextureRegion region, float x, float y, float width, float height, Consumer<Vector2> tweaker){
+        rectv(region, x, y, width, height, width / 2, height / 2, 0, tweaker);
+    }
+
+    public static void rectv(TextureRegion region, float x, float y, float width, float height, float rotation, Consumer<Vector2> tweaker){
+        rectv(region, x, y, width, height, width / 2, height / 2, rotation, tweaker);
+    }
+
+    public static void rectv(TextureRegion region, float x, float y, float width, float height, float originX, float originY, float rotation, Consumer<Vector2> tweaker){
+        x -= width / 2f;
+        y -= height / 2f;
+
+        float worldOriginX = x + originX;
+        float worldOriginY = y + originY;
+        float fx = -originX;
+        float fy = -originY;
+        float fx2 = width - originX;
+        float fy2 = height - originY;
+
+        float cos = MathUtils.cosDeg(rotation);
+        float sin = MathUtils.sinDeg(rotation);
+
+        float x1 = cos * fx - sin * fy + worldOriginX;
+        float y1 = sin * fx + cos * fy + worldOriginY;
+        float x2 = cos * fx - sin * fy2 + worldOriginX;
+        float y2 = sin * fx + cos * fy2 + worldOriginY;
+        float x3 = cos * fx2 - sin * fy2 + worldOriginX;
+        float y3 = sin * fx2 + cos * fy2 + worldOriginY;
+        float x4 = x1 + (x3 - x2);
+        float y4 = y3 - (y2 - y1);
+
+        tweaker.accept(Tmp.v1.set(x1, y1));
+        x1 = Tmp.v1.x;
+        y1 = Tmp.v1.y;
+
+        tweaker.accept(Tmp.v1.set(x2, y2));
+        x2 = Tmp.v1.x;
+        y2 = Tmp.v1.y;
+
+        tweaker.accept(Tmp.v1.set(x3, y3));
+        x3 = Tmp.v1.x;
+        y3 = Tmp.v1.y;
+
+        tweaker.accept(Tmp.v1.set(x4, y4));
+        x4 = Tmp.v1.x;
+        y4 = Tmp.v1.y;
+
+        float u = region.getU();
+        float v = region.getV2();
+        float u2 = region.getU2();
+        float v2 = region.getV();
+
+        float color = Core.batch.getPackedColor();
+
+        int i = 0;
+        vertices[i++] = x1;
+        vertices[i++] = y1;
+        vertices[i++] = color;
+        vertices[i++] = u;
+        vertices[i++] = v;
+
+        vertices[i++] = x2;
+        vertices[i++] = y2;
+        vertices[i++] = color;
+        vertices[i++] = u;
+        vertices[i++] = v2;
+
+        vertices[i++] = x3;
+        vertices[i++] = y3;
+        vertices[i++] = color;
+        vertices[i++] = u2;
+        vertices[i++] = v2;
+
+        vertices[i++] = x4;
+        vertices[i++] = y4;
+        vertices[i++] = color;
+        vertices[i++] = u2;
+        vertices[i++] = v;
+
+        batch.draw(region.getTexture(), vertices, 0, vertices.length);
     }
 
     public static void tscl(float scl){
