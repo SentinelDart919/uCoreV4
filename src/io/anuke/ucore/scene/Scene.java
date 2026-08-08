@@ -457,10 +457,16 @@ public class Scene extends InputAdapter implements Disposable{
      * Applies a mouse scroll event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
      * event. This event only occurs on the desktop.
      */
-    public boolean scrolled(int amount){
-        Element target = scrollFocus == null ? root : scrollFocus;
-
+    @Override
+    public boolean scrolled(float amountX, float amountY){
         screenToStageCoordinates(tempCoords.set(mouseScreenX, mouseScreenY));
+
+        int amount = (int)amountY;
+
+        //Try to deliver the scroll event to the widget under the mouse first, so scrolling works
+        //regardless of which actor currently holds the scroll focus.
+        Element target = hit(tempCoords.x, tempCoords.y, true);
+        if(target == null) target = scrollFocus == null ? root : scrollFocus;
 
         InputEvent event = Pooling.obtain(InputEvent.class, InputEvent::new);
         event.setStage(this);
@@ -471,6 +477,20 @@ public class Scene extends InputAdapter implements Disposable{
         target.fire(event);
         boolean handled = event.isHandled();
         Pooling.free(event);
+
+        //If the actor under the mouse did not consume the event, fall back to the scroll focus.
+        if(!handled && scrollFocus != null && target != scrollFocus){
+            InputEvent event2 = Pooling.obtain(InputEvent.class, InputEvent::new);
+            event2.setStage(this);
+            event2.setType(InputEvent.Type.scrolled);
+            event2.setScrollAmount(amount);
+            event2.setStageX(tempCoords.x);
+            event2.setStageY(tempCoords.y);
+            scrollFocus.fire(event2);
+            handled = event2.isHandled();
+            Pooling.free(event2);
+        }
+
         return handled;
     }
 

@@ -21,17 +21,27 @@ public enum Unit{
                 if(Gdx.app.getType() == ApplicationType.Desktop){
                     scl = 1f * product;
                 }else if(Gdx.app.getType() == ApplicationType.WebGL){
-                    scl = 1f;
+                    scl = 1f * product;
                 }else{
                     //mobile scaling
-                    scl = Math.max(Mathf.round2(Gdx.graphics.getDensity() / 1.5f + addition, 0.5f), 1f);
+                    scl = Math.max(Mathf.round2(Gdx.graphics.getDensity() / 1.5f + addition, 0.5f), 1f) * product;
                 }
             }
             return amount * scl;
+        }
+
+        /** Clears the cached scale so it is recalculated from the current {@link #product} and {@link #addition}. */
+        @Override
+        public void reset(){
+            scl = -1;
         }
     };
     public float addition = 0f;
     public float product = 1f;
 
     public abstract float scl(float amount);
+
+    public void reset(){
+
+    }
 }
