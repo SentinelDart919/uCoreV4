@@ -13,6 +13,7 @@ public class EffectEntity extends TimedEntity implements Poolable, DrawTrait{
     public Color color = Color.WHITE;
     public Object data;
     public float rotation = 0f;
+    public float lifetime = -1f;
 
     /**Light overrides for this effect instance; null/negative values use the effect's values instead.*/
     public Boolean emitLight = null;
@@ -35,7 +36,7 @@ public class EffectEntity extends TimedEntity implements Poolable, DrawTrait{
 
     @Override
     public float lifetime(){
-        return effect.lifetime;
+        return lifetime >= 0f ? lifetime : effect.lifetime;
     }
 
     @Override
@@ -66,6 +67,7 @@ public class EffectEntity extends TimedEntity implements Poolable, DrawTrait{
         lightOpacity = -1f;
         lightColor = null;
         rotation = time = poffsetx = poffsety = 0f;
+        lifetime = -1f;
         parent = null;
         data = null;
     }
