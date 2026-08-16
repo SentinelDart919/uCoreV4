@@ -114,9 +114,14 @@ public class ImageButton extends Button{
     }
 
     public void replaceImage(Element element){
-        getImageCell().setActor(element);
-        addChild(element);
-        image.remove();
+        Cell<Element> cell = null;//fix npe from switching from unlocked to locked blocks midgame
+        for(Element child : getChildren()){
+            cell = getCell(child);
+            if(cell != null) break;
+        }
+        if(cell == null) return;
+        cell.setActor(element);
+        if(image.getParent() != null) image.remove();
     }
 
     /** Updates the Image with the appropriate Drawable from the style before it is drawn. */
