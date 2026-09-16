@@ -1,7 +1,6 @@
 package io.anuke.ucore.entities;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import io.anuke.ucore.entities.trait.Entity;
 import io.anuke.ucore.entities.trait.SolidTrait;
@@ -41,6 +40,8 @@ public class EntityQuery{
 
         if(!group.useTree())
             throw new RuntimeException("This group does not support quadtrees! Enable quadtrees when creating it.");
+        //don't waste time for empty groups
+        if(group.isEmpty()) return;
         group.tree().getIntersect(out, rect);
     }
 
@@ -49,6 +50,8 @@ public class EntityQuery{
         array.clear();
         if(!group.useTree())
             throw new RuntimeException("This group does not support quadtrees! Enable quadtrees when creating it.");
+        //don't waste time for empty groups
+        if(group.isEmpty()) return array;
         group.tree().getIntersect(array, rect);
         return array;
     }
@@ -72,19 +75,20 @@ public class EntityQuery{
     public static <T extends Entity> T getClosest(EntityGroup<T> group, float x, float y, float range, Predicate<T> pred){
 
         T closest = null;
-        float cdist = 0f;
+        float cdist = range * range;
         Array<SolidTrait> entities = getNearby(group, x, y, range * 2f);
         for(int i = 0; i < entities.size; i++){
             T e = (T) entities.get(i);
             if(!pred.test(e))
                 continue;
 
-            float dist = Vector2.dst(e.getX(), e.getY(), x, y);
-            if(dist < range)
-                if(closest == null || dist < cdist){
-                    closest = e;
-                    cdist = dist;
-                }
+            //use squared distance to avoid a sqrt per candidate
+            float dx = e.getX() - x, dy = e.getY() - y;
+            float dist = dx * dx + dy * dy;
+            if(dist < cdist){
+                closest = e;
+                cdist = dist;
+            }
         }
 
         return closest;

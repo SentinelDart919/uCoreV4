@@ -17,6 +17,7 @@ import java.util.Iterator;
  */
 public class QuadTree<T>{
     private static Rectangle tmp = new Rectangle();
+    private static Rectangle tmp2 = new Rectangle();
     private int maxObjectsPerNode;
     private int level;
     private Rectangle bounds;
@@ -74,8 +75,8 @@ public class QuadTree<T>{
         // Transfer objects to children if they fit entirely in one
         for(Iterator<T> iterator = objects.iterator(); iterator.hasNext(); ){
             T obj = iterator.next();
-            provider.getBoundingBox(obj, tmp);
-            QuadTree<T> child = getFittingChild(tmp);
+            provider.getBoundingBox(obj, tmp2);
+            QuadTree<T> child = getFittingChild(tmp2);
             if(child != null){
                 child.insert(obj);
                 iterator.remove();
@@ -98,6 +99,7 @@ public class QuadTree<T>{
      * Inserts an object into this node or its child nodes. This will split a leaf node if it exceeds the object limit.
      */
     public void insert(T obj){
+        //compute the bounding box exactly once per insert - splitting never clobbers it (see split())
         provider.getBoundingBox(obj, tmp);
         if(!bounds.overlaps(tmp)){
             // New object not in quad tree, ignoring
@@ -111,7 +113,6 @@ public class QuadTree<T>{
             // Leaf, so no need to add to children, just add to root
             objects.add(obj);
         }else{
-            provider.getBoundingBox(obj, tmp);
             // Add to relevant child, or root if can't fit completely in a child
             QuadTree<T> child = getFittingChild(tmp);
             if(child != null){

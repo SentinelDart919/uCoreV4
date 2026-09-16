@@ -20,10 +20,22 @@ public class EntityGroup<T extends Entity>{
     private QuadTree<T> tree;
     private Consumer<T> removeListener;
     private Consumer<T> addListener;
+    private Rectangle queryRect = new Rectangle();
+    private boolean clearing;
+
+    public static int nextId(){
+        if(lastid >= Integer.MAX_VALUE - 2) lastid = 0;
+        return lastid++;
+    }
+
+    /** Makes sure the next ID counter is higher than this number, so future entities cannot possibly use this ID. */
+    public static void checkNextId(int id){
+        lastid = Math.max(lastid, id + 1);
+    }
 
     public EntityGroup(Class<T> type, boolean useTree){
         this.useTree = useTree;
-        this.id = lastid++;
+        this.id = nextId();
         this.type = type;
     }
 
@@ -92,10 +104,13 @@ public class EntityGroup<T extends Entity>{
         T t = map.get(id);
         if(t != null){ //remove if present in map already
             remove(t);
-        }else{ //maybe it's being queued?
+        }else{
             for(T check : entitiesToAdd){
                 if(check.getID() == id){ //if it is indeed queued, remove it
                     entitiesToAdd.removeValue(check, true);
+                    if(map != null){ //clear the mapping entry that was inserted on add()
+                        map.remove(id);
+                    }
                     if(removeListener != null){
                         removeListener.accept(check);
                     }
@@ -111,6 +126,11 @@ public class EntityGroup<T extends Entity>{
 
     public void setTree(float x, float y, float w, float h){
         tree = new QuadTree<>(Entities.maxLeafObjects, new Rectangle(x, y, w, h));
+    }
+
+    public void intersect(float x, float y, float w, float h, Consumer<T> out){
+        if(isEmpty()) return;
+        tree.getIntersect(out, queryRect.set(x, y, w, h));
     }
 
     public boolean isEmpty(){
@@ -146,6 +166,7 @@ public class EntityGroup<T extends Entity>{
 
     public void remove(T type){
         if(type == null) throw new RuntimeException("Cannot remove a null entity!");
+        if(clearing) return;
         type.setGroup(null);
         entitiesToRemove.add(type);
 
@@ -155,6 +176,8 @@ public class EntityGroup<T extends Entity>{
     }
 
     public void clear(){
+        clearing = true;
+
         for(T entity : entityArray)
             entity.setGroup(null);
 
@@ -169,6 +192,8 @@ public class EntityGroup<T extends Entity>{
         entityArray.clear();
         if(map != null)
             map.clear();
+
+        clearing = false;
     }
 
     public T find(Predicate<T> pred){

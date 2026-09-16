@@ -10,8 +10,18 @@ public abstract class BaseEntity implements Entity{
     public float x, y;
     protected transient EntityGroup group;
 
+    public static int nextId(){
+        if(lastid >= Integer.MAX_VALUE - 2) lastid = 0;
+        return lastid++;
+    }
+
+    /** Makes sure the next ID counter is higher than this number, so future entities cannot possibly use this ID. */
+    public static void checkNextId(int id){
+        lastid = Math.max(lastid, id + 1);
+    }
+
     public BaseEntity(){
-        id = lastid++;
+        id = nextId();
     }
 
     @Override

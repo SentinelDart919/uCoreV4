@@ -11,10 +11,8 @@ import io.anuke.ucore.util.Physics;
 import io.anuke.ucore.util.QuadTree;
 
 public class EntityCollisions{
-    //range for tile collision scanning
-    private static final int r = 2;
-    //move in 1-unit chunks
-    private static final float seg = 1f;
+    //range for tile collision scanning, derived from entity size
+    private static final float seg = 1f, maxDelta = 1000f;
 
     //tile collisions
     private float tilesize;
@@ -41,6 +39,13 @@ public class EntityCollisions{
     }
 
     public void move(SolidTrait entity, float deltax, float deltay){
+
+        if((Math.abs(deltax) < 0.0001f && Math.abs(deltay) < 0.0001f) || deltax != deltax || deltay != deltay){
+            return;
+        }
+
+        deltax = Mathf.clamp(deltax, -maxDelta, maxDelta);
+        deltay = Mathf.clamp(deltay, -maxDelta, maxDelta);
 
         boolean movedx = false;
 
@@ -79,6 +84,8 @@ public class EntityCollisions{
         rect.x += deltax;
         rect.y += deltay;
 
+        int r = Math.max((int) Math.ceil(Math.max(rect.width, rect.height) / tilesize), 1);
+
         int tilex = Mathf.scl2(rect.x + rect.width / 2, tilesize), tiley = Mathf.scl2(rect.y + rect.height / 2, tilesize);
 
         for(int dx = -r; dx <= r; dx++){
@@ -106,7 +113,7 @@ public class EntityCollisions{
             throw new IllegalArgumentException("No tile collider specified! Call setCollider() first.");
 
         rect.getCenter(vector);
-        int r = 1;
+        int r = Math.max((int) Math.ceil(Math.max(rect.width, rect.height) / tilesize), 1);
 
         //assumes tiles are centered
         int tilex = Mathf.scl2(vector.x, tilesize);
@@ -222,6 +229,8 @@ public class EntityCollisions{
     }
 
     public void collideGroups(EntityGroup<?> groupa, EntityGroup<?> groupb){
+        if(groupa.isEmpty() || groupb.isEmpty()) return;
+
         collided.clear();
 
         for(Entity entity : groupa.all()){
